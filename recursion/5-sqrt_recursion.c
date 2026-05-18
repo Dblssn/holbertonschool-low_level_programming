@@ -1,6 +1,5 @@
+#include "main.h"
 
-<<<<<<< HEAD
-=======
 /**
  * check_sqrt - checks if i is the square root of n
  * @n: number
@@ -32,4 +31,3 @@ int _sqrt_recursion(int n)
 
 	return (check_sqrt(n, 0));
 }
->>>>>>> d43d9e9 (task 5)
