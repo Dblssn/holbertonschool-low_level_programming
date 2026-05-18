@@ -1,3 +1,4 @@
+#include "main.h"
 /**
  * check_prime - checks if a number is divisible
  * @n: number to check
