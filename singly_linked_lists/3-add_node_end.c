@@ -8,10 +8,10 @@
   *@head: head pointer
   *Return: the address of the new element or null if it fails
   */
-
 list_t *add_node_end(list_t **head, const char *str)
 {
 	list_t *new_node, *temp;
+	unsigned int len = 0;
 
 	if (str == NULL)
 		return (NULL);
@@ -19,10 +19,14 @@ list_t *add_node_end(list_t **head, const char *str)
 	new_node = malloc(sizeof(list_t));
 	if (new_node == NULL)
 		return (NULL);
-	new_node->str = strdup(str);
 
-	new_node->len = strlen(str);
+	new_node->str = strdup(str);
+	while (str[len] != '\0')
+		len++;
+
+	new_node->len = len;
 	new_node->next = NULL;
+
 	if (*head == NULL)
 	{
 		*head = new_node;
