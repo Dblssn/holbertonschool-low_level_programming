@@ -1,45 +1,42 @@
 #include "main.h"
 /**
- * main - Copies the contents of one file to another.
- * @c: Number of command-line arguments.
- * @v: Array of command-line arguments.
- * Return: 0 on success.
+ * main - copies a file into another file
+ * @c: argument count
+ * @v: argument vector
+ *
+ * Return: 0 on success, or exit codes on failure
  */
 int main(int c, char **v)
 {
-	int f1, f2;
-	ssize_t r, w;
+	int f1, f2, c1, c2;
 	char b[1024];
 
 	if (c != 3)
 		return (dprintf(1, "Usage: cp file_from file_to\n"), 97);
+
 	f1 = open(v[1], O_RDONLY);
 	if (f1 == -1)
 		return (dprintf(1, "Error: Can't read from file %s\n", v[1]), 98);
+
 	f2 = open(v[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (f2 == -1)
-	{
-		close(f1);
 		return (dprintf(1, "Error: Can't write to %s\n", v[2]), 99);
-	}
-	r = read(f1, b, 1024);
-	while (r > 0)
+
+	c1 = read(f1, b, 1024);
+	while (c1 > 0)
 	{
-		w = write(f2, b, r);
-		if (w != r)
-		{
-			close(f1);
-			close(f2);
-			return (dprintf(1, "Error: Can't write to %s\n", v[2]), 99);
-		}
-		r = read(f1, b, 1024);
+		c2 = write(f2, b, c1);
+		if (c2 != c1)
+			return (dprintf(1, "Error: Can't write to %s\n", v[2]),
+				close(f1), close(f2), 99);
+
+		c1 = read(f1, b, 1024);
 	}
-	if (r == -1)
-	{
-		close(f1);
-		close(f2);
-		return (dprintf(1, "Error: Can't read from file %s\n", v[1]), 98);
-	}
+
+	if (c1 == -1)
+		return (dprintf(1, "Error: Can't read from file %s\n", v[1]),
+			close(f1), close(f2), 98);
+
 	if (close(f1) == -1)
 		return (dprintf(1, "Error: Can't close fd %d\n", f1), 100);
 
