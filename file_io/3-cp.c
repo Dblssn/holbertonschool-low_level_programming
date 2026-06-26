@@ -8,11 +8,14 @@
  */
 int main(int c, char **v)
 {
-	int f1, f2, c1, c2;
+	int f1, f2, r, w;
 	char b[1024];
 
 	if (c != 3)
-		return (dprintf(1, "Usage: cp file_from file_to\n"), 97);
+	{
+		dprintf(1, "Usage: cp file_from file_to\n");
+		return (97);
+	}
 
 	f1 = open(v[1], O_RDONLY);
 	if (f1 == -1)
@@ -20,20 +23,19 @@ int main(int c, char **v)
 
 	f2 = open(v[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (f2 == -1)
-		return (dprintf(1, "Error: Can't write to %s\n", v[2]), 99);
+		return (dprintf(1, "Error: Can't write to %s\n", v[2]), close(f1), 99);
 
-	c1 = read(f1, b, 1024);
-	while (c1 > 0)
+	r = read(f1, b, 1024);
+	while (r > 0)
 	{
-		c2 = write(f2, b, c1);
-		if (c2 != c1)
+		w = write(f2, b, r);
+		if (w != r)
 			return (dprintf(1, "Error: Can't write to %s\n", v[2]),
 				close(f1), close(f2), 99);
-
-		c1 = read(f1, b, 1024);
+		r = read(f1, b, 1024);
 	}
 
-	if (c1 == -1)
+	if (r == -1)
 		return (dprintf(1, "Error: Can't read from file %s\n", v[1]),
 			close(f1), close(f2), 98);
 
