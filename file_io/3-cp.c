@@ -1,49 +1,91 @@
 #include "main.h"
 /**
- * main - copies a file into another file
- * @c: argument count
- * @v: argument vector
- *
- * Return: 0 on success, or exit codes on failure
+ * close_fd - Closes a file descriptor.
+ * @fd: File descriptor to close.
+ * Return: Nothing.
  */
-int main(int c, char **v)
+void close_fd(int fd)
 {
-	int f1, f2, r, w;
-	char b[1024];
-
-	if (c != 3)
+	if (close(fd) == -1)
 	{
-		dprintf(1, "Usage: cp file_from file_to\n");
-		return (97);
+		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
+		exit(100);
 	}
-
-	f1 = open(v[1], O_RDONLY);
-	if (f1 == -1)
-		return (dprintf(1, "Error: Can't read from file %s\n", v[1]), 98);
-
-	f2 = open(v[2], O_WRONLY | O_CREAT | O_TRUNC, 0664);
-	if (f2 == -1)
-		return (dprintf(1, "Error: Can't write to %s\n", v[2]), close(f1), 99);
-
-	r = read(f1, b, 1024);
-	while (r > 0)
+}
+/**
+ * check_args - Checks the number of arguments.
+ * @argc: Number of arguments.
+ * Return: Nothing.
+ */
+void check_args(int argc)
+{
+	if (argc != 3)
 	{
-		w = write(f2, b, r);
+		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
+		exit(97);
+	}
+}
+/**
+ * copy_file - Copies data from one file to another.
+ * @fd_from: Source file descriptor.
+ * @fd_to: Destination file descriptor.
+ * @from: Source file name.
+ * @to: Destination file name.
+ * Return: Nothing.
+ */
+void copy_file(int fd_from, int fd_to, char *from, char *to)
+{
+	char buf[1024];
+	ssize_t r, w;
+
+	while ((r = read(fd_from, buf, 1024)) > 0)
+	{
+		w = write(fd_to, buf, r);
 		if (w != r)
-			return (dprintf(1, "Error: Can't write to %s\n", v[2]),
-				close(f1), close(f2), 99);
-		r = read(f1, b, 1024);
+		{
+			dprintf(STDERR_FILENO,
+				"Error: Can't write to %s\n", to);
+			exit(99);
+		}
 	}
-
 	if (r == -1)
-		return (dprintf(1, "Error: Can't read from file %s\n", v[1]),
-			close(f1), close(f2), 98);
+	{
+		dprintf(STDERR_FILENO,
+			"Error: Can't read from file %s\n", from);
+		exit(98);
+	}
+}
+/**
+ * main - Copies the contents of one file to another.
+ * @argc: Number of command-line arguments.
+ * @argv: Array of command-line arguments.
+ * Return: 0 on success.
+ */
+int main(int argc, char *argv[])
+{
+	int fd_from;
+	int fd_to;
 
-	if (close(f1) == -1)
-		return (dprintf(1, "Error: Can't close fd %d\n", f1), 100);
+	check_args(argc);
 
-	if (close(f2) == -1)
-		return (dprintf(1, "Error: Can't close fd %d\n", f2), 100);
+	fd_from = open(argv[1], O_RDONLY);
 
+	if (fd_from == -1)
+	{
+		dprintf(STDERR_FILENO,
+			"Error: Can't read from file %s\n", argv[1]);
+		exit(98);
+	}
+	fd_to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, 0664);
+	if (fd_to == -1)
+	{
+		dprintf(STDERR_FILENO,
+			"Error: Can't write to %s\n", argv[2]);
+		close_fd(fd_from);
+		exit(99);
+	}
+	copy_file(fd_from, fd_to, argv[1], argv[2]);
+	close_fd(fd_from);
+	close_fd(fd_to);
 	return (0);
 }
